@@ -2,7 +2,13 @@ from datetime import date
 from pathlib import Path
 
 from cashlens.models import Assinatura, Categoria, Conta, Transacao
-from cashlens.reports import evolucao_mensal, gerar_relatorio_mensal, resumo_assinaturas
+from cashlens.reports import (
+    evolucao_mensal,
+    gerar_relatorio_mensal,
+    listar_transacoes_mensais,
+    resumo_assinaturas,
+    top_merchants,
+)
 from cashlens.storage import create_db_and_tables, get_session
 
 
@@ -206,3 +212,61 @@ def test_evolucao_mensal_atravessa_virada_de_ano():
     from cashlens.reports import _meses_ate
 
     assert _meses_ate(date(2026, 2, 1), 4) == [(2025, 11), (2025, 12), (2026, 1), (2026, 2)]
+
+
+def test_listar_transacoes_mensais_inclui_receitas_e_ordena_por_data_desc(tmp_path: Path):
+    db_path = tmp_path / "cashlens.db"
+    create_db_and_tables(db_path)
+
+    with get_session(db_path) as session:
+        conta = Conta(nome="Nubank")
+        session.add(conta)
+        session.commit()
+        session.refresh(conta)
+
+        _preparar_mes_de_junho(session, conta.id)
+
+        linhas = listar_transacoes_mensais(session, 2026, 6)
+
+        assert [linha.data for linha in linhas] == [date(2026, 6, 20), date(2026, 6, 15), date(2026, 6, 10), date(2026, 6, 5)]
+        assert linhas[0].valor_centavos == 250000  # SALARIO, uma receita, aparece na lista
+        assert linhas[0].categoria is None
+
+        spotify = next(linha for linha in linhas if linha.merchant == "SPOTIFY*PREMIUM")
+        assert spotify.categoria == "assinaturas"
+
+
+def test_top_merchants_considera_so_gastos_e_ordena_por_total(tmp_path: Path):
+    db_path = tmp_path / "cashlens.db"
+    create_db_and_tables(db_path)
+
+    with get_session(db_path) as session:
+        conta = Conta(nome="Nubank")
+        session.add(conta)
+        session.commit()
+        session.refresh(conta)
+
+        _preparar_mes_de_junho(session, conta.id)
+
+        top = top_merchants(session, 2026, 6)
+
+        nomes = [linha.merchant for linha in top]
+        assert nomes == ["IFD*IFOOD", "LOJA DESCONHECIDA", "SPOTIFY*PREMIUM"]
+        assert all(linha.total_centavos > 0 for linha in top)
+        assert top[0].quantidade == 1
+
+
+def test_top_merchants_respeita_o_limite(tmp_path: Path):
+    db_path = tmp_path / "cashlens.db"
+    create_db_and_tables(db_path)
+
+    with get_session(db_path) as session:
+        conta = Conta(nome="Nubank")
+        session.add(conta)
+        session.commit()
+        session.refresh(conta)
+
+        _preparar_mes_de_junho(session, conta.id)
+
+        top = top_merchants(session, 2026, 6, limite=2)
+        assert len(top) == 2

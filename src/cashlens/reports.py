@@ -2,6 +2,7 @@ from calendar import monthrange
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date
+from typing import Optional
 
 from sqlmodel import Session, select
 
@@ -128,3 +129,71 @@ def evolucao_mensal(session: Session, referencia: date, quantidade_meses: int = 
         PontoEvolucaoMensal(ano=ano, mes=mes, total_centavos=gerar_relatorio_mensal(session, ano, mes).total_centavos)
         for ano, mes in _meses_ate(referencia, quantidade_meses)
     ]
+
+
+@dataclass
+class LinhaTransacao:
+    data: date
+    merchant: str
+    categoria: Optional[str]
+    valor_centavos: int
+
+
+def listar_transacoes_mensais(session: Session, ano: int, mes: int) -> list[LinhaTransacao]:
+    """Todas as transações do mês (gastos e entradas), da mais recente pra mais antiga."""
+    primeiro_dia = date(ano, mes, 1)
+    ultimo_dia = date(ano, mes, monthrange(ano, mes)[1])
+
+    transacoes = session.exec(
+        select(Transacao)
+        .where(Transacao.data >= primeiro_dia)
+        .where(Transacao.data <= ultimo_dia)
+        .order_by(Transacao.data.desc())
+    ).all()
+
+    linhas = []
+    for transacao in transacoes:
+        categoria = session.get(Categoria, transacao.categoria_id) if transacao.categoria_id else None
+        linhas.append(
+            LinhaTransacao(
+                data=transacao.data,
+                merchant=transacao.merchant or transacao.descricao_original,
+                categoria=categoria.nome if categoria else None,
+                valor_centavos=transacao.valor_centavos,
+            )
+        )
+    return linhas
+
+
+@dataclass
+class LinhaMerchant:
+    merchant: str
+    total_centavos: int
+    quantidade: int
+
+
+def top_merchants(session: Session, ano: int, mes: int, limite: int = 10) -> list[LinhaMerchant]:
+    """Merchants com maior gasto total no mês (só débitos, maior primeiro)."""
+    primeiro_dia = date(ano, mes, 1)
+    ultimo_dia = date(ano, mes, monthrange(ano, mes)[1])
+
+    transacoes = session.exec(
+        select(Transacao)
+        .where(Transacao.data >= primeiro_dia)
+        .where(Transacao.data <= ultimo_dia)
+        .where(Transacao.valor_centavos < 0)
+    ).all()
+
+    totais: dict[str, int] = defaultdict(int)
+    quantidades: dict[str, int] = defaultdict(int)
+    for transacao in transacoes:
+        chave = transacao.merchant or transacao.descricao_original
+        totais[chave] += -transacao.valor_centavos
+        quantidades[chave] += 1
+
+    linhas = [
+        LinhaMerchant(merchant=merchant, total_centavos=total, quantidade=quantidades[merchant])
+        for merchant, total in totais.items()
+    ]
+    linhas.sort(key=lambda linha: linha.total_centavos, reverse=True)
+    return linhas[:limite]
