@@ -8,6 +8,7 @@ from cashlens.models import Conta, Transacao
 from cashlens.storage import create_db_and_tables, get_session, importar_extrato
 
 FIXTURE_OFX = Path(__file__).parent / "fixtures" / "exemplo.ofx"
+FIXTURE_OFX_CARTAO = Path(__file__).parent / "fixtures" / "exemplo_cartao.ofx"
 
 
 def test_parse_ofx_extrai_conta_e_transacoes():
@@ -21,6 +22,16 @@ def test_parse_ofx_extrai_conta_e_transacoes():
     assert spotify.valor_centavos == -1990
     assert spotify.descricao_original == "SPOTIFY*PREMIUM"
     assert spotify.fonte == "ofx"
+
+
+def test_parse_ofx_cartao_de_credito_sem_bankid():
+    """Extratos de cartão usam CCACCTFROM (só acctid, sem bankid) - não pode quebrar."""
+    extrato = OfxImporter().parse(FIXTURE_OFX_CARTAO)
+
+    assert extrato.conta.identificador == "1234567890123456"
+    assert extrato.conta.instituicao is None
+    assert len(extrato.transacoes) == 2
+    assert extrato.transacoes[0].valor_centavos == -1990
 
 
 def test_parse_ofx_e_deterministico():

@@ -20,8 +20,12 @@ class OfxImporter(Importer):
         ofx = tree.convert()
         stmt = ofx.statements[0]
 
-        conta_identificador = f"{stmt.account.bankid}:{stmt.account.acctid}"
-        conta = ContaExterna(identificador=conta_identificador, instituicao=stmt.account.bankid)
+        # Extratos de cartão de crédito usam CCACCTFROM, que só tem acctid (sem
+        # bankid) - diferente de conta corrente/poupança (BANKACCTFROM).
+        bankid = getattr(stmt.account, "bankid", None)
+        acctid = stmt.account.acctid
+        conta_identificador = f"{bankid}:{acctid}" if bankid else acctid
+        conta = ContaExterna(identificador=conta_identificador, instituicao=bankid)
 
         transacoes = []
         for txn in stmt.transactions:
