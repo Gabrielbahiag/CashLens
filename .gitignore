@@ -1,0 +1,30 @@
+# Dados financeiros sensíveis — nunca versionar
+*.ofx
+*.csv
+*.db
+*.sqlite
+*.sqlite3
+.env
+
+# Exceção: fixtures de teste são sempre sintéticas, nunca extratos reais
+!tests/fixtures/**/*.ofx
+!tests/fixtures/**/*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Ambientes virtuais
+.venv/
+venv/
+
+# Editores
+.vscode/
+.idea/

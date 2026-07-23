@@ -1,0 +1,19 @@
+[project]
+name = "cashlens"
+version = "0.1.0"
+description = "Controle financeiro pessoal local-first: importa extratos, categoriza gastos e detecta assinaturas recorrentes."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ofxtools>=1.1.1",
+    "sqlmodel>=0.0.22",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.27,<0.12.0"]
+build-backend = "uv_build"
