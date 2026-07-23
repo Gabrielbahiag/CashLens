@@ -1,14 +1,27 @@
 categorias:
-  alimentacao:
-  - ifood
-  - rappi
-  - rest(aurante)?
   assinaturas:
-  - spotify
-  - netflix
-  - google.*one
-  nome-da-categoria:
-  - padrao-do-extrato
+    - spotify
+    - netflix
+    - "google.*one"
+    - "apple\\.com"
+    - anthropic
+    - claude
+  alimentacao:
+    - ifood
+    - rappi
+    - "rest(aurante)?"
+    - "mc.?donal"
+    - "burger.?king"
+    - 99food
+    - sushi
   transporte:
-  - uber
-  - 99.*app
+    - uber
+    - "99.*app"
+    - "99.*nupay"
+  compras:
+    - "mercado.?livre"
+  taxas:
+    - iof
+  estornos_pagamentos:
+    - estorno
+    - "pagamento recebido"

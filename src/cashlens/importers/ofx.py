@@ -1,3 +1,4 @@
+from collections import defaultdict
 from pathlib import Path
 
 from ofxtools.Parser import OFXTree
@@ -27,11 +28,24 @@ class OfxImporter(Importer):
         conta_identificador = f"{bankid}:{acctid}" if bankid else acctid
         conta = ContaExterna(identificador=conta_identificador, instituicao=bankid)
 
+        # O FITID deveria ser único por conta (spec OFX), mas na prática alguns
+        # bancos reaproveitam o mesmo FITID para transações diferentes (ex.: uma
+        # cobrança e o IOF associado a ela, no mesmo dia). Sem desambiguar, a
+        # segunda transação seria descartada como "duplicata" na importação.
+        ocorrencias_fitid: dict[str, int] = defaultdict(int)
+
         transacoes = []
         for txn in stmt.transactions:
             data = txn.dtposted.date()
             valor_centavos = int(txn.trnamt * 100)
             descricao = txn.memo or txn.name or ""
+
+            id_externo = txn.fitid
+            if id_externo:
+                ocorrencia = ocorrencias_fitid[id_externo]
+                ocorrencias_fitid[id_externo] += 1
+                if ocorrencia > 0:
+                    id_externo = f"{id_externo}#{ocorrencia}"
 
             transacoes.append(
                 TransacaoImportada(
@@ -41,7 +55,7 @@ class OfxImporter(Importer):
                         data=data,
                         valor_centavos=valor_centavos,
                         descricao=descricao,
-                        id_externo=txn.fitid,
+                        id_externo=id_externo,
                     ),
                     data=data,
                     valor_centavos=valor_centavos,
