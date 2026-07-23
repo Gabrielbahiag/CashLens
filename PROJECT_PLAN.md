@@ -245,20 +245,20 @@ fase later) · `pluggy-sdk` (Open Finance, fase later) · `pytest`.
 - [x] `cli.py`: importar arquivo e ver o relatório no terminal
 
 ### Fase 4 — Detecção de assinaturas
-- [ ] `recurrence.py` (agrupamento + regularidade + tolerância de valor)
-- [ ] Bloco de assinaturas no relatório
-- [ ] Testes com séries recorrentes sintéticas
+- [x] `recurrence.py` (agrupamento + regularidade + tolerância de valor)
+- [x] Bloco de assinaturas no relatório
+- [x] Testes com séries recorrentes sintéticas
 
 ### Fase 5 — Importador CSV
-- [ ] `importers/csv.py` (bancos que exportam CSV em vez de OFX)
+- [x] `importers/csv.py` (bancos que exportam CSV em vez de OFX)
 
 ### Fase 6 — Dashboard (Streamlit)
-- [ ] `dashboard.py`: gráficos por categoria, evolução mensal, assinaturas
-- [ ] README com print/GIF do dashboard
+- [x] `dashboard.py`: gráficos por categoria, evolução mensal, assinaturas
+- [~] README com instruções do dashboard (print/GIF ainda pendente — sem captura visual neste ambiente)
 
 ### Fase 7 — Open Finance (Pluggy) — o diferencial "produto"
-- [ ] `importers/pluggy.py` via Meu Pluggy (sync automático)
-- [ ] Fluxo de consentimento documentado
+- [x] `importers/pluggy.py` via Meu Pluggy (autentica + sincroniza contas/transações; não testado contra a API real, ver docs/pluggy-consentimento.md)
+- [x] Fluxo de consentimento documentado (`docs/pluggy-consentimento.md`) — captura do `item_id` via widget ainda é manual (Dashboard do Pluggy), não automatizada na CLI
 
 ### Evoluções de produto (roadmap pra contar na entrevista)
 - [ ] Orçamentos por categoria + alertas de estouro

@@ -5,7 +5,7 @@ from datetime import date
 
 from sqlmodel import Session, select
 
-from cashlens.models import Categoria, Transacao
+from cashlens.models import Assinatura, Categoria, Transacao
 
 
 @dataclass
@@ -63,3 +63,68 @@ def gerar_relatorio_mensal(session: Session, ano: int, mes: int) -> RelatorioMen
         nao_categorizadas_centavos=nao_categorizadas_centavos,
         nao_categorizadas_qtd=contagem_nao_categorizadas,
     )
+
+
+@dataclass
+class LinhaAssinatura:
+    merchant: str
+    valor_centavos: int
+    periodicidade: str
+    status: str
+
+
+@dataclass
+class ResumoAssinaturas:
+    total_mensal_centavos: int
+    assinaturas: list[LinhaAssinatura]
+
+
+def resumo_assinaturas(session: Session) -> ResumoAssinaturas:
+    """Assinaturas ativas e o total mensal recorrente (anuais rateadas por 12)."""
+    ativas = session.exec(select(Assinatura).where(Assinatura.status == "ativa")).all()
+
+    total_mensal_centavos = 0
+    linhas = []
+    for assinatura in ativas:
+        valor_gasto = -assinatura.valor_centavos
+        valor_mensalizado = valor_gasto if assinatura.periodicidade == "mensal" else round(valor_gasto / 12)
+        total_mensal_centavos += valor_mensalizado
+        linhas.append(
+            LinhaAssinatura(
+                merchant=assinatura.merchant,
+                valor_centavos=valor_gasto,
+                periodicidade=assinatura.periodicidade,
+                status=assinatura.status,
+            )
+        )
+
+    linhas.sort(key=lambda linha: linha.valor_centavos, reverse=True)
+    return ResumoAssinaturas(total_mensal_centavos=total_mensal_centavos, assinaturas=linhas)
+
+
+@dataclass
+class PontoEvolucaoMensal:
+    ano: int
+    mes: int
+    total_centavos: int
+
+
+def _meses_ate(referencia: date, quantidade_meses: int) -> list[tuple[int, int]]:
+    meses = []
+    ano, mes = referencia.year, referencia.month
+    for i in range(quantidade_meses - 1, -1, -1):
+        m = mes - i
+        a = ano
+        while m <= 0:
+            m += 12
+            a -= 1
+        meses.append((a, m))
+    return meses
+
+
+def evolucao_mensal(session: Session, referencia: date, quantidade_meses: int = 6) -> list[PontoEvolucaoMensal]:
+    """Total gasto em cada um dos últimos `quantidade_meses` meses até `referencia` (inclusive)."""
+    return [
+        PontoEvolucaoMensal(ano=ano, mes=mes, total_centavos=gerar_relatorio_mensal(session, ano, mes).total_centavos)
+        for ano, mes in _meses_ate(referencia, quantidade_meses)
+    ]

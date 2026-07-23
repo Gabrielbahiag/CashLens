@@ -1,12 +1,14 @@
 categorias:
-  assinaturas:
-    - spotify
-    - netflix
-    - "google.*one"
   alimentacao:
-    - ifood
-    - rappi
-    - "rest(aurante)?"
+  - ifood
+  - rappi
+  - rest(aurante)?
+  assinaturas:
+  - spotify
+  - netflix
+  - google.*one
+  nome-da-categoria:
+  - padrao-do-extrato
   transporte:
-    - uber
-    - "99.*app"
+  - uber
+  - 99.*app
