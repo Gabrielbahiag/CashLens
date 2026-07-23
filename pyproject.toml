@@ -6,8 +6,13 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "ofxtools>=1.1.1",
+    "pyyaml>=6.0.3",
     "sqlmodel>=0.0.22",
+    "typer>=0.27.0",
 ]
+
+[project.scripts]
+cashlens = "cashlens.cli:app"
 
 [dependency-groups]
 dev = [

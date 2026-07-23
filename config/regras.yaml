@@ -1,0 +1,12 @@
+categorias:
+  assinaturas:
+    - spotify
+    - netflix
+    - "google.*one"
+  alimentacao:
+    - ifood
+    - rappi
+    - "rest(aurante)?"
+  transporte:
+    - uber
+    - "99.*app"

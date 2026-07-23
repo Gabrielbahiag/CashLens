@@ -7,7 +7,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 
 from cashlens import models  # noqa: F401  (garante que as tabelas sejam registradas)
 from cashlens.importers.base import ContaExterna, ExtratoImportado
-from cashlens.models import Conta, Transacao
+from cashlens.models import Categoria, Conta, Transacao
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parents[2] / "data" / "cashlens.db"
 
@@ -51,6 +51,18 @@ def obter_ou_criar_conta(session: Session, conta_externa: ContaExterna) -> Conta
     session.commit()
     session.refresh(conta)
     return conta
+
+
+def obter_ou_criar_categoria(session: Session, nome: str) -> Categoria:
+    categoria = session.exec(select(Categoria).where(Categoria.nome == nome)).first()
+    if categoria is not None:
+        return categoria
+
+    categoria = Categoria(nome=nome)
+    session.add(categoria)
+    session.commit()
+    session.refresh(categoria)
+    return categoria
 
 
 def importar_extrato(session: Session, extrato: ExtratoImportado) -> ResultadoImportacao:

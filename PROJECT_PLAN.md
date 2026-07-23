@@ -235,14 +235,14 @@ fase later) · `pluggy-sdk` (Open Finance, fase later) · `pytest`.
 - [x] Fixture OFX sintética + testes
 
 ### Fase 2 — Normalização + categorização
-- [ ] `normalize.py` (limpeza de merchant)
-- [ ] `config/regras.yaml` + `categorize.py` (motor de regras)
-- [ ] Fluxo "não categorizado → usuário ensina regra"
-- [ ] Testes de categorização com casos de borda
+- [x] `normalize.py` (limpeza de merchant)
+- [x] `config/regras.yaml` + `categorize.py` (motor de regras)
+- [x] Fluxo "não categorizado → usuário ensina regra"
+- [x] Testes de categorização com casos de borda
 
 ### Fase 3 — Relatório mensal (CLI)
-- [ ] `reports.py` (agregação por categoria/mês)
-- [ ] `cli.py`: importar arquivo e ver o relatório no terminal
+- [x] `reports.py` (agregação por categoria/mês)
+- [x] `cli.py`: importar arquivo e ver o relatório no terminal
 
 ### Fase 4 — Detecção de assinaturas
 - [ ] `recurrence.py` (agrupamento + regularidade + tolerância de valor)
